@@ -1,6 +1,6 @@
 # src/test_htmlnode.py
 import unittest
-from htmlnode import HTMLNode
+from htmlnode import HTMLNode,LeafNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_no_tag(self):
@@ -25,6 +25,19 @@ class TestHTMLNode(unittest.TestCase):
             if node.tag is None and node.value is None and node.children is None and node.props is None:
                 raise ValueError("Creating an HTMLNode with all None parameters is pointless")
         self.assertIn("pointless", str(context.exception))
+    def test_leaf_to_html_p(self):
+        node = LeafNode("p", "Hello, world!")
+        self.assertEqual(node.to_html(), "<p>Hello, world!</p>")
+    def test_leaf_to_html_a(self):
+        node = LeafNode("a", "Click me!", {"href": "https://www.boot.dev"})
+        self.assertEqual(node.to_html(), '<a href="https://www.boot.dev">Click me!</a>')
+    def test_leaf_no_value(self):
+        with self.assertRaises(ValueError) as context:
+            node = LeafNode("a")
+            if node.value is None:
+                raise ValueError("LeafNode requires a value")
+        self.assertIn("value", str(context.exception))
+
 
 if __name__ == "__main__":
     unittest.main()
