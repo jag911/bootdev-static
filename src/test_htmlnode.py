@@ -1,6 +1,6 @@
 # src/test_htmlnode.py
 import unittest
-from htmlnode import HTMLNode,LeafNode
+from htmlnode import HTMLNode,LeafNode,ParentNode
 
 class TestHTMLNode(unittest.TestCase):
     def test_no_tag(self):
@@ -25,6 +25,7 @@ class TestHTMLNode(unittest.TestCase):
             if node.tag is None and node.value is None and node.children is None and node.props is None:
                 raise ValueError("Creating an HTMLNode with all None parameters is pointless")
         self.assertIn("pointless", str(context.exception))
+
     def test_leaf_to_html_p(self):
         node = LeafNode("p", "Hello, world!")
         self.assertEqual(node.to_html(), "<p>Hello, world!</p>")
@@ -33,11 +34,22 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(node.to_html(), '<a href="https://www.boot.dev">Click me!</a>')
     def test_leaf_no_value(self):
         with self.assertRaises(ValueError) as context:
-            node = LeafNode("a")
-            if node.value is None:
-                raise ValueError("LeafNode requires a value")
-        self.assertIn("value", str(context.exception))
+            LeafNode("a", None)  # Explicitly pass None as value
+            self.assertIn("LeafNode requires a value", str(context.exception))
 
+    def test_to_html_with_children(self):
+        child_node = LeafNode("span", "child")
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(parent_node.to_html(), "<div><span>child</span></div>")
+
+    def test_to_html_with_grandchildren(self):
+        grandchild_node = LeafNode("b", "grandchild")
+        child_node = ParentNode("span", [grandchild_node])
+        parent_node = ParentNode("div", [child_node])
+        self.assertEqual(
+            parent_node.to_html(),
+            "<div><span><b>grandchild</b></span></div>",
+        )
 
 if __name__ == "__main__":
     unittest.main()

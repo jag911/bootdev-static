@@ -48,8 +48,38 @@ class HTMLNode():
     #     self.attributes[key] = value
 
 class LeafNode(HTMLNode):
-    def __init__(self, tag=None, value=None, props=None):
-        super().__init__(tag, value, props=props)
+    def __init__(self, tag, value, props=None):
+        if value is None:
+            raise ValueError("LeafNode requires a VALUE")
+        super().__init__(tag=tag, value=value, children=None, props=props)
     
     def to_html(self):
-        return "<{}{}>{}</{}>".format(self.tag, self.props_to_html(), self.value, self.tag)
+        return self.value if self.tag == None else "<{}{}>{}</{}>".format(self.tag, self.props_to_html(), self.value, self.tag)
+    
+class ParentNode(HTMLNode):
+    def __init__(self, tag, children=None, props=None):
+        if children is None:
+            raise ValueError("ParentNode requires CHILDREN")
+        if tag is None:
+            raise ValueError("ParentNode requires a TAG")
+        super().__init__(tag=tag, value=None, children=children, props=props)
+    
+    def to_html(self):
+        if self.children is None:
+            raise ValueError("ParentNode requires a CHILD")
+        if self.tag is None:
+            raise ValueError("ParentNode requires a TAG")
+        return "<{}{}>{}</{}>".format(self.tag, self.props_to_html(), "".join([child.to_html() for child in self.children]), self.tag)
+    
+if __name__ == "__main__":
+    node = ParentNode(
+        "p",
+        [
+            LeafNode("b", "Bold text"),
+            LeafNode(None, "Normal text"),
+            LeafNode("i", "italic text"),
+            LeafNode(None, "Normal text"),
+        ],
+    )
+
+    print(node.to_html())
