@@ -1,3 +1,5 @@
+from textnode import TextType
+
 class HTMLNode():
     def __init__(self, tag=None, value=None, children=None, props=None):
         if tag is None and value is None and children is None and props is None:
@@ -18,34 +20,6 @@ class HTMLNode():
         
     def __repr__(self):
         return f"tag: {self.tag}, value: {self.value}, props: {self.props}, children: {self.children}"
-
-    # def __str__(self):
-    #     if self.children is None:
-    #         return "<{}{}>".format(self.tag, self._attributes())
-    #     else:
-    #         return "<{}{}>{}</{}>".format(self.tag, self._attributes(), self._children(), self.tag)
-
-    # def _attributes(self):
-    #     if self.attributes is None:
-    #         return ""
-    #     else:
-    #         return " " + " ".join(['{}="{}"'.format(k, v) for k, v in self.attributes.items()])
-
-    # def _children(self):
-    #     if self.children is None:
-    #         return ""
-    #     else:
-    #         return "".join([str(child) for child in self.children])
-
-    # def add_child(self, child):
-    #     if self.children is None:
-    #         self.children = []
-    #     self.children.append(child)
-
-    # def add_attribute(self, key, value):
-    #     if self.attributes is None:
-    #         self.attributes = {}
-    #     self.attributes[key] = value
 
 class LeafNode(HTMLNode):
     def __init__(self, tag, value, props=None):
@@ -71,6 +45,26 @@ class ParentNode(HTMLNode):
             raise ValueError("ParentNode requires a TAG")
         return "<{}{}>{}</{}>".format(self.tag, self.props_to_html(), "".join([child.to_html() for child in self.children]), self.tag)
     
+def text_node_to_html_node(text_node):
+    match text_node.text_type:
+        case TextType.BOLD:
+            return LeafNode("b", text_node.text)
+        case TextType.ITALIC:
+            return LeafNode("i", text_node.text)
+        case TextType.TEXT:
+            return LeafNode(None, text_node.text)
+        case TextType.CODE:
+            return LeafNode("code", text_node.text)
+        case TextType.LINK:
+            return LeafNode("a", text_node.text, {"href":text_node.url})
+        case TextType.IMAGE:
+            return LeafNode("img", text_node.text, {"src": text_node.url})
+        case _:
+            raise ValueError("Unknown TextType")
+        
+
+
+
 if __name__ == "__main__":
     node = ParentNode(
         "p",
